@@ -6,7 +6,6 @@ import time
 import uuid
 from random import randrange
 
-from partida1 import Partida1
 from partida2 import Partida2
 from partida3 import Partida3
 from partida4 import Partida4
