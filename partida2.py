@@ -11,14 +11,21 @@ class Partida2:
     def __init__(self):
         self.sockets = {}
         self.jugadores = 0
-
-    async def add_player(self, websocket: WebSocket):
+        self.client_list = [None, None]
+            
+    async def add_player(self, websocket: WebSocket, client_id: str):
         jugador_id = f"socket{self.jugadores}"
         self.sockets[jugador_id] = websocket
         self.jugadores += 1
+        self.client_list[self.jugadores - 1] = client_id
 
         if self.jugadores == 2:
             await self.iniciar_partida()
+        else:
+            # Enviar mensaje a todos los jugadores con la lista de client_id
+            message = json.dumps({"0": self.client_list[0], "1": self.client_list[1]})
+            for i in range(self.jugadores):
+                await self.send_message_to_socket(str(i), message)
 
 
     async def iniciar_partida(self):
@@ -62,29 +69,29 @@ class Partida2:
 
                 
             if puntosJugador0 > 100 and puntosJugador1 < 100:
-                mano_send = {"Ganador": 0, "0": puntosJugador0 ,"1": puntosJugador1}
+                mano_send = {"Ganador Partida": 0, "0": puntosJugador0 ,"1": puntosJugador1}
                 message = json.dumps(mano_send)                        
                 await self.send_message_to_all_sockets(message)
                 break
             elif puntosJugador1 > 100 and puntosJugador0 < 100:
-                mano_send = {"Ganador": 1, "0": puntosJugador0 ,"1": puntosJugador1}
+                mano_send = {"Ganador Partida": 1, "0": puntosJugador0 ,"1": puntosJugador1}
                 message = json.dumps(mano_send)
                 await self.send_message_to_all_sockets(message)
                 break
             elif puntosJugador0 > 100 and puntosJugador1 > 100:
                 if orden[indice_ganador] == orden_inicial[0]: 
-                    mano_send = {"Ganador": 0, "0": puntosJugador0 ,"1": puntosJugador1}
+                    mano_send = {"Ganador Partida": 0, "0": puntosJugador0 ,"1": puntosJugador1}
                     message = json.dumps(mano_send)  
                     await self.send_message_to_all_sockets(message)
                     break
                 else:
-                    mano_send = {"Ganador": 1, "0": puntosJugador0 ,"1": puntosJugador1}
+                    mano_send = {"Ganador Partida": 1, "0": puntosJugador0 ,"1": puntosJugador1}
                     message = json.dumps(mano_send)
                     await self.send_message_to_all_sockets(message)
                     break
             else:
                 vueltas = True
-                mano_send = {"Ganador": None, "0": puntosJugador0 ,"1": puntosJugador1}
+                mano_send = {"Ganador Partida": None, "0": puntosJugador0 ,"1": puntosJugador1}
                 message = json.dumps(mano_send)
                 await self.send_message_to_all_sockets(message)
 
@@ -271,16 +278,13 @@ class Partida2:
             message = json.dumps(mano_send)
             await self.send_message_to_socket(str(i), message)
             
-    #TODO cuando se les habilita, y demas cosa
     async def cantar_cambiar_jugador(self, manos, triunfo, cantado0, cantado1, puntosJugador0, puntosJugador1, puede_cantar_cambiar, arrastre):
         for i in range(2):
-            print("v")
             palo, valor = triunfo
             tiene_siete_triunfo, cantar_oro, cartar_basto, cantar_copa, cantar_espada =  cantar_cambiar(manos[i], triunfo)
             cantado = cantado0
             if i != 0: cantado = cantado1
             cambiar = "False"
-            new = ""
             
             if puede_cantar_cambiar == i:
                 
