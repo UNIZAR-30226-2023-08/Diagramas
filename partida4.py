@@ -19,6 +19,10 @@ class Partida4:
         self.client_list[self.jugadores - 1] = client_id
 
         if self.jugadores == 4:
+            # Enviar mensaje a todos los jugadores con la lista de client_id
+            message = json.dumps({"0": self.client_list[0], "1": self.client_list[1], "2": self.client_list[2], "3": self.client_list[3]})
+            for i in range(self.jugadores):
+                await self.send_message_to_socket(str(i), message)
             await self.iniciar_partida()
         else:
             # Enviar mensaje a todos los jugadores con la lista de client_id
@@ -100,18 +104,45 @@ class Partida4:
         self.jugadores -= 1
         
     async def await_message(self, id):
-        if id == "0":
-            mensaje_jugador_0 = await self.sockets["socket0"].receive_text()
-            return mensaje_jugador_0
-        elif id == "1":
-            mensaje_jugador_1 = await self.sockets["socket1"].receive_text()
-            return mensaje_jugador_1
-        elif id == "2":
-            mensaje_jugador_1 = await self.sockets["socket2"].receive_text()
-            return mensaje_jugador_1
-        else:
-            mensaje_jugador_1 = await self.sockets["socket3"].receive_text()
-            return mensaje_jugador_1
+        try:
+            if id == "0":
+                mensaje_jugador_0 = await asyncio.wait_for(self.sockets["socket0"].receive_text(), timeout=20)
+                return mensaje_jugador_0
+            elif id == "1":
+                mensaje_jugador_1 = await asyncio.wait_for(self.sockets["socket1"].receive_text(), timeout=20)
+                return mensaje_jugador_1
+            elif id == "2":
+                mensaje_jugador_1 = await asyncio.wait_for(self.sockets["socket2"].receive_text(), timeout=20)
+                return mensaje_jugador_1
+            else:
+                mensaje_jugador_1 = await asyncio.wait_for(self.sockets["socket3"].receive_text(), timeout=20)
+                return mensaje_jugador_1
+        except asyncio.TimeoutError:
+            message_fin = {"Desconexion": id}
+            message_fin = json.dumps(message_fin)
+            await self.send_message_to_all_sockets(message_fin)
+            self.terminate_game()
+            raise
+        
+    async def await_message_siete(self, id):
+        try:
+            if id == "0":
+                mensaje_jugador_0 = await asyncio.wait_for(self.sockets["socket0"].receive_text(), timeout=4)
+                return mensaje_jugador_0
+            elif id == "1":
+                mensaje_jugador_1 = await asyncio.wait_for(self.sockets["socket1"].receive_text(), timeout=4)
+                return mensaje_jugador_1
+            elif id == "2":
+                mensaje_jugador_1 = await asyncio.wait_for(self.sockets["socket2"].receive_text(), timeout=4)
+                return mensaje_jugador_1
+            else:
+                mensaje_jugador_1 = await asyncio.wait_for(self.sockets["socket3"].receive_text(), timeout=4)
+                return mensaje_jugador_1
+        except asyncio.TimeoutError:
+            return None
+
+    def terminate_game(self):
+        self.sockets = {}
         
     async def send_message_to_socket(self, socketid: str, message: str):
         if socketid == "0":
@@ -327,6 +358,8 @@ class Partida4:
             await self.send_message_to_socket(str(i), message)
             
     async def cantar_cambiar_jugador(self, manos, triunfo, cantado0_2, cantado1_3, puntosJugador0_2, puntosJugador1_3, puede_cantar_cambiar, arrastre):
+        cambiado_por_jugador = 10
+        posibilidad = [False, False, False, False]
         for i in range(2):
             palo, valor = triunfo
             tiene_siete_triunfo, cantar_oro, cartar_basto, cantar_copa, cantar_espada =  cantar_cambiar(manos[i], triunfo)
@@ -338,21 +371,9 @@ class Partida4:
                 if puede_cantar_cambiar == 0: 
                     puede_cantar_cambiar == 2
                 elif puede_cantar_cambiar == 1:
-                    puede_cantar_cambiar == 3
-                
-                if tiene_siete_triunfo and not arrastre:
-                    mano_send = "Cambiar7"
-                    message = json.dumps(mano_send)
-                    await self.send_message_to_socket(str(i), message)
+                    puede_cantar_cambiar == 3  
                     
-                    cambiar = await self.await_message(str(i))
-                    if cambiar == "True":
-                        manos[i].remove((palo, 7))
-                        manos[i].append(triunfo)
-                        triunfo = (palo, 7)
-                        message = {"Cambiado": i}
-                        message = json.dumps(mano_send)
-                        await self.send_message_to_socket(str(i), message)
+            if puede_cantar_cambiar == i:         
                            
                 if cantar_oro and cantado[0] == False:
                     elque = "20"
@@ -413,5 +434,47 @@ class Partida4:
                         cantado1_3[3] = True
                         if elque == "20": puntosJugador1_3 += 20
                         if elque == "40": puntosJugador1_3 += 40
+                        
+            if tiene_siete_triunfo and not arrastre and puede_cantar_cambiar == i:
+                posibilidad[i] = True
+            
+        for i in range(4):
+            mano_send = {"Cambiar7": posibilidad[i]}
+            message = json.dumps(mano_send)
+            await self.send_message_to_socket(str(i), message)
+        
+        if posibilidad[0] or posibilidad[1] or posibilidad[2] or posibilidad[3]:
+            x = 0
+            if posibilidad[1]:
+                x = 1
+            elif posibilidad[2]:
+                x = 2
+            elif posibilidad[3]:
+                x = 3
+            
+            inicio = time.time()
+            cambiar = await self.await_message_siete(str(x))
+            final = time.time()
+            if cambiar == "True":
+                manos[i].remove((palo, 7))
+                manos[i].append(triunfo)
+                triunfo = (palo, 7)
+                cambiado_por_jugador = i
+                segundos = final - inicio
+                if segundos < 4:
+                    time.sleep(4 - segundos)
+        else:
+            time.sleep(4)
+    
+        mano_send = {"Cambiado": None}
+        message = json.dumps(mano_send)               
+                        
+        if cambiado_por_jugador != 10:
+            message = {"Cambiado": cambiado_por_jugador}
+            message = json.dumps(message)
+
+        for a in range(4):
+            await self.send_message_to_socket(str(a), message)
+        time.sleep(3)   
             
         return cantado0_2, cantado1_3, puntosJugador0_2, puntosJugador1_3, triunfo
