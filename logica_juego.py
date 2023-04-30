@@ -127,7 +127,8 @@ def cantar_cambiar(mano, triunfo):
     for carta in mano:
         palo, valor = carta
         if valor == 7 and palo == triunfo[0]:
-            tiene_siete_triunfo = True
+            if triunfo[1] > 7 or triunfo[1] == 3 or triunfo[1] == 1:
+                tiene_siete_triunfo = True
     
         if valor == 10 and palo == "oro":
             for carta in mano:
@@ -162,8 +163,8 @@ validez = que_cartas_puede_usar_jugador_arrastre([("basto", 2), ("basto", 11), (
 suma = sumar_puntos([("espada", 3), ("espada", 1), ("basto", 5), ("oro", 5)])
 #print(suma)
 
-suma = cantar_cambiar([("espada", 10), ("espada", 12), ("espada", 7), ("oro", 10), ("oro", 12)], ("espada", 2))
-#print(suma)
+cantar = cantar_cambiar([("espada", 10), ("espada", 12), ("espada", 7), ("oro", 10), ("oro", 12)], ("espada", 1))
+#print(cantar)
 
 cartaGanadora = que_jugador_gana_baza([("espada", 3), ("espada", 1)], "oro")
 #print(cartaGanadora)
