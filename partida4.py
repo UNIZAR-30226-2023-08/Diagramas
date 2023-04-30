@@ -43,6 +43,8 @@ class Partida4:
         arrastre = False
         vueltas = False
         
+        ganador = 0
+        
         await self.send_message_to_all_sockets("Comienza partida")
         
         for i in range(2):
@@ -76,28 +78,36 @@ class Partida4:
                 mano_send = {"Ganador Partida": [0,2], "0": puntosJugador0_2 ,"1": puntosJugador1_3, "2": puntosJugador0_2 ,"3": puntosJugador1_3}
                 message = json.dumps(mano_send)                        
                 await self.send_message_to_all_sockets(message)
+                ganador = 0
                 break
             elif puntosJugador1_3 > 100 and puntosJugador0_2 < 100:
                 mano_send = {"Ganador Partida": [1,3], "0": puntosJugador0_2 ,"1": puntosJugador1_3, "2": puntosJugador0_2 ,"3": puntosJugador1_3}
                 message = json.dumps(mano_send)
                 await self.send_message_to_all_sockets(message)
+                ganador = 1
                 break
             elif puntosJugador0_2 > 100 and puntosJugador1_3 > 100:
                 if orden[indice_ganador] == orden_inicial[0]: 
                     mano_send = {"Ganador Partida": [0,2], "0": puntosJugador0_2 ,"1": puntosJugador1_3, "2": puntosJugador0_2 ,"3": puntosJugador1_3}
                     message = json.dumps(mano_send)  
                     await self.send_message_to_all_sockets(message)
+                    ganador = 0
                     break
                 else:
                     mano_send = {"Ganador Partida": [1,3], "0": puntosJugador0_2 ,"1": puntosJugador1_3, "2": puntosJugador0_2 ,"3": puntosJugador1_3}
                     message = json.dumps(mano_send)
                     await self.send_message_to_all_sockets(message)
+                    ganador = 1
                     break
             else:
                 vueltas = True
                 mano_send = {"Ganador Partida": None, "0": puntosJugador0_2 ,"1": puntosJugador1_3, "2": puntosJugador0_2 ,"3": puntosJugador1_3}
                 message = json.dumps(mano_send)
                 await self.send_message_to_all_sockets(message)
+                ganador = 10
+        
+        if ganador == 0 or ganador == 1:
+            await self.fin_partida(self.client_list, ganador, puntosJugador0_2, puntosJugador1_3)
     
     async def remove_player(self, jugador_id: str):
         self.sockets.pop(jugador_id, None)
@@ -478,3 +488,7 @@ class Partida4:
         time.sleep(3)   
             
         return cantado0_2, cantado1_3, puntosJugador0_2, puntosJugador1_3, triunfo
+    
+    async def fin_partida(self, client_list, ganador, puntosJugador0_2, puntosJugador1_3):
+        print("METE AQUI LO DE BD")
+        #AQUI CONSIDER QUE SI GANADOR ES 1, TAMBUIEN LO ES 3, Y SI GANA EL 0, TAMBIEN GANA EL 2

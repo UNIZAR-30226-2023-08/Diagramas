@@ -38,6 +38,8 @@ class Partida3:
         orden_inicial = [0,1,2]
         orden = [0,1,2]
         
+        ganador = 0
+        
         cantado0 = [False, False, False, False]
         cantado1 = [False, False, False, False]
         cantado2 = [False, False, False, False]
@@ -46,6 +48,8 @@ class Partida3:
                             
         manos = []
         triunfo, manos = await self.comienzo_partida()
+        
+        perdedor = 0
         
 
         await self.send_message_to_all_sockets("Arrastre")
@@ -62,18 +66,24 @@ class Partida3:
             mano_send = {"Perdedor": None, "0": puntosJugador0 ,"1": puntosJugador1, "2": puntosJugador2}
             message = json.dumps(mano_send)                        
             await self.send_message_to_all_sockets(message)
+            perdedor = None
         elif puntosJugador1 < puntosJugador0 < puntosJugador2  or puntosJugador2 < puntosJugador0 < puntosJugador1:
             mano_send = {"Perdedor": 0, "0": puntosJugador0 ,"1": puntosJugador1, "2": puntosJugador2}
             message = json.dumps(mano_send)                        
             await self.send_message_to_all_sockets(message)
+            perdedor = 0
         elif puntosJugador0 < puntosJugador1 < puntosJugador2  or puntosJugador2 < puntosJugador1 < puntosJugador0:
             mano_send = {"Perdedor": 1, "0": puntosJugador0 ,"1": puntosJugador1, "2": puntosJugador2}
             message = json.dumps(mano_send)                        
             await self.send_message_to_all_sockets(message)
+            perdedor = 1
         else:
             mano_send = {"Perdedor": 2, "0": puntosJugador0 ,"1": puntosJugador1, "2": puntosJugador2}
             message = json.dumps(mano_send)                        
             await self.send_message_to_all_sockets(message)
+            perdedor = 2
+            
+        await self.fin_partidafin_partida(self.client_list, perdedor, puntosJugador0, puntosJugador1, puntosJugador2)
         
     async def remove_player(self, jugador_id: str):
         self.sockets.pop(jugador_id, None)
@@ -372,7 +382,8 @@ class Partida3:
         
         for a in range(3):
             await self.send_message_to_socket(str(a), message)
-                             
-        return cantado0, cantado1, puntosJugador0, puntosJugador1, triunfo
             
         return cantado0, cantado1, puntosJugador0, puntosJugador1, puntosJugador2, triunfo
+    
+    async def fin_partida(self, client_list, perdedor, puntosJugador0, puntosJugador1, puntosJugador2):
+        print("METE AQUI LO DE BD")
