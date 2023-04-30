@@ -407,9 +407,9 @@ class Partida2:
                 cambiado_por_jugador = i
             segundos = final - inicio
             if segundos < 4:
-                time.sleep(4 - segundos)
+                await asyncio.sleep(4 - segundos)
         else:
-            time.sleep(4)
+            await asyncio.sleep(4)
                         
         message = {"Cambiado": None}
         message = json.dumps(message)                
