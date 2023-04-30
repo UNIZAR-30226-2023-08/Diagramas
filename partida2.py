@@ -394,8 +394,11 @@ class Partida2:
                 await self.send_message_to_socket(str(i), message)
         
         if posibilidad[0] or posibilidad[1]:
+            x = 0
+            if posibilidad[1]:
+                x = 1
             inicio = time.time()        
-            cambiar = await self.await_message_siete(str(i))
+            cambiar = await self.await_message_siete(str(x))
             final = time.time()
             if cambiar == "True":
                 manos[i].remove((palo, 7))
