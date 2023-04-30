@@ -92,13 +92,13 @@ class Partida3:
     async def await_message(self, id):
         try:
             if id == "0":
-                mensaje_jugador_0 = await asyncio.wait_for(self.sockets["socket0"].receive_text(), timeout=15)
+                mensaje_jugador_0 = await asyncio.wait_for(self.sockets["socket0"].receive_text(), timeout=20)
                 return mensaje_jugador_0
             elif id == "1":
-                mensaje_jugador_1 = await asyncio.wait_for(self.sockets["socket1"].receive_text(), timeout=15)
+                mensaje_jugador_1 = await asyncio.wait_for(self.sockets["socket1"].receive_text(), timeout=20)
                 return mensaje_jugador_1
             else:
-                mensaje_jugador_1 = await asyncio.wait_for(self.sockets["socket2"].receive_text(), timeout=15)
+                mensaje_jugador_1 = await asyncio.wait_for(self.sockets["socket2"].receive_text(), timeout=20)
                 return mensaje_jugador_1
             
         except asyncio.TimeoutError:
@@ -107,6 +107,20 @@ class Partida3:
             await self.send_message_to_all_sockets(message_fin)
             self.terminate_game()
             raise
+        
+    async def await_message_siete(self, id):
+        try:
+            if id == "0":
+                mensaje_jugador_0 = await asyncio.wait_for(self.sockets["socket0"].receive_text(), timeout=4)
+                return mensaje_jugador_0
+            elif id == "1":
+                mensaje_jugador_1 = await asyncio.wait_for(self.sockets["socket1"].receive_text(), timeout=4)
+                return mensaje_jugador_1
+            else:
+                mensaje_jugador_1 = await asyncio.wait_for(self.sockets["socket2"].receive_text(), timeout=4)
+                return mensaje_jugador_1
+        except asyncio.TimeoutError:
+            return None
 
     def terminate_game(self):
         self.sockets = {}
