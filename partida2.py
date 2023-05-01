@@ -49,13 +49,13 @@ class Partida2:
         
         await self.send_message_to_all_sockets("Comienza partida")
         
-        for i in range(14):
+        for i in range(2):
             
             manos = []
             mazo, triunfo, manos = await self.comienzo_partida()
             arrastre = False
             
-            for i in range(6):
+            for i in range(14):
                 puntosJugador0, puntosJugador1, manos, orden, orden_inicial, puede_cantar_cambiar= await self.ronda(triunfo, puntosJugador0, puntosJugador1, manos, orden, orden_inicial)    
                 if vueltas: 
                     ganador = self.comprobarGanador(puntosJugador0, puntosJugador1)
