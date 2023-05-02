@@ -59,8 +59,9 @@ class Partida4:
                 if vueltas: 
                     ganador = self.comprobarGanador(puntosJugador0_2, puntosJugador1_3)
                     if ganador: break
-                cantado0_2, cantado1_3, puntosJugador0_2, puntosJugador1_3, triunfo, puede_cantar_cambiar = await self.cantar_cambiar_jugador(manos, triunfo, cantado0_2, cantado1_3, puntosJugador0_2, puntosJugador1_3, puede_cantar_cambiar, arrastre)
+                cantado0_2, cantado1_3, puntosJugador0_2, puntosJugador1_3, triunfo = await self.cantar_cambiar_jugador(manos, triunfo, cantado0_2, cantado1_3, puntosJugador0_2, puntosJugador1_3, puede_cantar_cambiar, arrastre)
                 mazo, manos = await self.repartir(orden_inicial, mazo, triunfo, manos)
+                
             
             await self.send_message_to_all_sockets("Arrastre")
             arrastre = True
